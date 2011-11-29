@@ -10,12 +10,61 @@
 #define SHA256 2
 #define SHA512 3
 
+int check_password(char *password)
+{
+    char c;
+    int i=0;
+    while(1)
+    {
+       c = *(password+i) ;
+       if(c == '\n')
+       {
+           c = '\0';
+           *(password+i) = '\0';
+       }
+       else if(c == '\r')
+       {
+           c = '\0';
+           *(password+i) = '\0';
+       }
+       i++;
+       printf("%c[%d]\n",c,(int)c); //for debug
+       if((c > 0 && c < 45 && c != 10) || c == 47) 
+       {
+           printf("\nInvalid password is rejected!\n");
+           return -1;
+       }
+       if(c >= 58 && c < 65)
+       {
+           printf("\nInvalid password is rejected!\n");
+           return -1;
+       }
+       if(c >= 91 && c < 97)
+       {
+           printf("\nInvalid password is rejected!\n");
+           return -1;
+       }
+       if(c > 122)
+       {
+           printf("\nInvalid password is rejected!\n");
+           return -1;
+       }
+       if (c == '\0') break;
+       if(i > 20)
+       {
+           printf("\nInvalid password is rejected!\n");
+           return -1;
+       }
+    }
+}
 
 int main(int argc,char **argv)
 {
     int opt,num=0,verbose=0;
     int file_pass_flag = 0;
-    
+    FILE *fp;
+    char password[22];
+
     int result;
     static struct option long_options[] = {
         {"hash",required_argument,NULL,HASH},
@@ -40,12 +89,23 @@ int main(int argc,char **argv)
                 break;
             case USE_FILE:
                 printf("pass_file_path = %s\n",optarg);
-
-                //if((optarg is true path)) file_pass_flag = 1;
-                break;
+                file_pass_flag = 1;
+                if((fp=fopen(optarg,"r")) == NULL)
+                {
+                    printf("file open error\n");
+                    exit(-1);
+                }
+                fgets(password,22,fp);
+                    break;
         }
     }
 
-    printf("Please input a password\n");
+    if(!file_pass_flag)
+    {
+        printf("Please input a password\n");
+        fgets(password,22,stdin);
+    }
+
+    check_password(password);
 
 }
