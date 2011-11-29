@@ -1,5 +1,4 @@
 #include<stdio.h>
-#include<unistd.h>
 #include<getopt.h>
 
 #define HASH 1
