@@ -49,10 +49,20 @@ int check_password(char *password)
            printf("\nInvalid password is rejected!\n");
            return -1;
        }
-       if (c == '\0') break;
+       if (c == '\0')
+       {
+           if(i <= 14)
+           {
+            printf("\nInvalid password is rejected!:too short\n");
+               return -1;
+           }
+           else{
+           return 0;
+           }
+       }
        if(i > 20)
        {
-           printf("\nInvalid password is rejected!\n");
+           printf("\nInvalid password is rejected!:too long\n");
            return -1;
        }
     }
@@ -60,7 +70,9 @@ int check_password(char *password)
 
 int main(int argc,char **argv)
 {
-    int opt,num=0,verbose=0;
+    int opt;
+    int iteration_count = 1000;
+    //char salt[16];
     int file_pass_flag = 0;
     FILE *fp;
     char password[22];
@@ -85,7 +97,13 @@ int main(int argc,char **argv)
                 printf("salt = %d\n",atoi(optarg));
                 break;
             case ITERATION_COUNT:
-                printf("ic = %d\n",atoi(optarg));
+                iteration_count = atoi(optarg);
+                printf("ic = %d\n",iteration_count);
+                if(iteration_count < 1000)
+                {
+                    printf("iteration count must be over 1000\n");
+                    exit(-1);
+                }
                 break;
             case USE_FILE:
                 printf("pass_file_path = %s\n",optarg);
@@ -106,6 +124,6 @@ int main(int argc,char **argv)
         fgets(password,22,stdin);
     }
 
-    check_password(password);
+    if(check_password(password) != 0) exit(-1);
 
 }
