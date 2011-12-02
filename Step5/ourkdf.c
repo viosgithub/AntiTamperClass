@@ -125,10 +125,11 @@ void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
 		}
 		else
 		{
-			HMAC(hashfunc,password,password_length,result_u,strlen(result_u),result_u,&result_len);
+			HMAC(hashfunc,password,password_length,result_u,result_len,result_u,&result_len);
 			strxor(dkey,result_u);
 
 		}
+		hexoutput(dkey,result_len);
 
 	}
 
