@@ -15,6 +15,19 @@
 
 //#define DEBUG
 
+void antiNewLine(char *str)
+{
+	int i;
+	for(i=0;i<strlen(str);i++)
+	{
+		if(str[i] == '\n')
+		{
+			str[i] = '\0';
+			return;
+		}
+	}
+}
+
 void hexoutput(const unsigned char *dkey,int length)
 {
 	int i;
@@ -107,18 +120,15 @@ void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
 	{
 		if(i == 0)
 		{
-			//HMAC(EVP_sha1(),password,password_length,data,strlen(data),result_u,&result_len);
 			HMAC(hashfunc,password,password_length,data,strlen(data),result_u,&result_len);
 			strcpy(dkey,result_u);
 		}
 		else
 		{
-			//HMAC(EVP_sha1(),password,password_length,result_u,strlen(result_u),result_u,&result_len);
 			HMAC(hashfunc,password,password_length,result_u,strlen(result_u),result_u,&result_len);
 			strxor(dkey,result_u);
 
 		}
-
 
 	}
 
@@ -195,6 +205,8 @@ int main(int argc,char **argv)
 	char salt[33];
 	unsigned char dkey[65];
 	int dkey_length = 20;
+	int salt_flag = 0;
+	int ic_flag = 0;
 
 	int result;
 	static struct option long_options[] = {
@@ -232,6 +244,7 @@ int main(int argc,char **argv)
 
 				break;
 			case SALT:
+				salt_flag = 1;
 				strcpy(salt,optarg);
 #ifdef DEBUG
 				printf("salt=%s\n",salt);
@@ -239,6 +252,7 @@ int main(int argc,char **argv)
 
 				break;
 			case ITERATION_COUNT:
+				ic_flag = 1;
 				iteration_count = atoi(optarg);
 #ifdef DEBUG
 				printf("ic = %d\n",iteration_count);
@@ -262,6 +276,18 @@ int main(int argc,char **argv)
 				fgets(password,22,fp);
 				break;
 		}
+	}
+
+	if(!salt_flag)
+	{
+		printf("Please in put a salt\n");
+		exit(-1);
+	}
+
+	if(!ic_flag)
+	{
+		printf("Please in put a iteration_count\n");
+		exit(-1);
 	}
 
 	if(!file_pass_flag)
