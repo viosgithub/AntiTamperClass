@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<getopt.h>
+#include<string.h>
 
 #define HASH 1
 #define SALT 2
@@ -10,18 +11,23 @@
 #define SHA256 2
 #define SHA512 3
 
-char *kdf(int hashtype,char *password,char *salt,int ic)
+void kdf(int hashtype,char *password,char *salt,int ic,char *dkey)
 {
-    char dkey[65];
     char result_u[65];
-    char
+    char data[65];
+    
+
+    strcpy(data,salt);
+    strcat(data,"00000001");
+    
+    /*
     int i;
     for(i=0;i<ic;i++)
     {
         if(i == 0)
         {
-            result_u = U(NULL,i)
-            dkey = result_u;
+            result_u = U(NULL,i);
+            strcpy(dkey,result_u);
         }
         else
         {
@@ -32,7 +38,7 @@ char *kdf(int hashtype,char *password,char *salt,int ic)
         
     }
 
-    return &dkey;
+    */
 }
 
 unsigned char *U(char *key,char *data,int ic)
@@ -40,6 +46,18 @@ unsigned char *U(char *key,char *data,int ic)
     unsigned char result[65];
         HMAC(EVP_sha1(),key,strlen(key),data,strlen(data),result_u,65);
         return result;
+}
+
+d_showdata(char *data)
+{
+   int i;
+   printf("string:%s\n",data);
+   printf("asciicode\n");
+   for(i=0;i<strlen(data),i++)
+   {
+       printf("%u\n",data[i]);
+   }
+   
 }
 
 int check_password(char *password)
