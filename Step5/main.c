@@ -10,6 +10,38 @@
 #define SHA256 2
 #define SHA512 3
 
+char *kdf(int hashtype,char *password,char *salt,int ic)
+{
+    char dkey[65];
+    char result_u[65];
+    char
+    int i;
+    for(i=0;i<ic;i++)
+    {
+        if(i == 0)
+        {
+            result_u = U(NULL,i)
+            dkey = result_u;
+        }
+        else
+        {
+        result_u = U(result_u,i);
+        dkey = dkey ^ result_u;
+        }
+
+        
+    }
+
+    return &dkey;
+}
+
+unsigned char *U(char *key,char *data,int ic)
+{
+    unsigned char result[65];
+        HMAC(EVP_sha1(),key,strlen(key),data,strlen(data),result_u,65);
+        return result;
+}
+
 int check_password(char *password)
 {
     char c;
