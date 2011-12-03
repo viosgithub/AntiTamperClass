@@ -9,6 +9,9 @@
 #define ITERATION_COUNT 3
 #define USE_FILE 4
 
+#define MIN_IC 1000
+#define MIN_PASS 14
+
 #define SHA1 1
 #define SHA256 2
 #define SHA512 3
@@ -84,21 +87,72 @@ void printHashType(int hashtype)
 	}
 }
 
+unsigned char char2num(unsigned char c)
+{
+    if(c >= 48 && c <= 57) return (c - 48);
+    else if(c >= 97 && c <= 102) c -= 32;
+    if(c >= 65 && c <= 70) return (c - 55);
+    else 
+    {
+    printf("char2num:can't convert data\n");
+    return '\0';
+    }
+    
+
+}
+void hex2bin(unsigned char *data,int *length)
+{
+    int i=0;
+    unsigned char now_c,next_c;
+    unsigned char hex_data[33];
+    unsigned char byte;
+    strcpy(hex_data,data);
+    strcat(hex_data,"00000001");
+    while(1)
+    {
+        if(hex_data[i*2] == '\0')
+        {
+            *length = i;
+            break;
+        }
+        else if(hex_data[i*2+1] == '\0')
+        {
+            now_c = char2num(hex_data[i*2]);
+            *length = i+1;
+            byte = now_c;
+            data[i] = byte;
+            break;
+        }
+        else
+        {
+            now_c = char2num(hex_data[i*2]);
+            next_c = char2num(hex_data[i*2+1]);
+            byte = now_c << 4;
+            byte += next_c;
+            data[i] = byte;
+        }
+        i++;
+    }
+    
+    
+}
+
 void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
 {
 	unsigned char result_u[65];
 	unsigned char data[65];
 	int password_length;
 	int result_len;
+    int init_data_len;
 	EVP_MD *hashfunc;
 
 
 	password_length = strlen(password);
 	strcpy(data,salt);
-	strcat(data,"00000001");
+    hex2bin(data,&init_data_len);
 #ifdef DEBUG
 	printf("in KDF:\n");
-	printf("pass=%s,salt=%s,ic=%d\n",password,salt,ic);
+	printf("pass=%s,salt=%s,ic=%u\n",password,salt,ic);
 	printHashType(hashtype);	
 	printf("salt+data=%s\n",data);
 #endif
@@ -115,13 +169,13 @@ void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
 			break;
 	}
 
-	int i;
+	unsigned int i;
 	for(i=0;i<ic;i++)
 	{
 		if(i == 0)
 		{
-			HMAC(hashfunc,password,password_length,data,strlen(data),result_u,&result_len);
-			strcpy(dkey,result_u);
+			HMAC(hashfunc,password,password_length,data,init_data_len,result_u,&result_len);
+            memcpy(dkey,result_u,result_len);
 		}
 		else
 		{
@@ -129,7 +183,6 @@ void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
 			strxor(dkey,result_u);
 
 		}
-		hexoutput(dkey,result_len);
 
 	}
 
@@ -178,7 +231,7 @@ int check_password(char *password)
 		}
 		if (c == '\0')
 		{
-			if(i <= 14)
+			if(i <= MIN_PASS)
 			{
 				printf("\nInvalid password is rejected!:too short\n");
 				return -1;
@@ -198,7 +251,7 @@ int check_password(char *password)
 int main(int argc,char **argv)
 {
 	int opt;
-	int iteration_count = 1000;
+	unsigned int iteration_count = 1000;
 	int file_pass_flag = 0;
 	int hashtype = SHA1;
 	FILE *fp;
@@ -258,7 +311,7 @@ int main(int argc,char **argv)
 #ifdef DEBUG
 				printf("ic = %d\n",iteration_count);
 #endif
-				if(iteration_count < 1000)
+				if(iteration_count < MIN_IC)
 				{
 					printf("iteration count must be over 1000\n");
 					exit(-1);
@@ -301,6 +354,7 @@ int main(int argc,char **argv)
 	kdf(hashtype,password,salt,iteration_count,dkey);
 	//showdata("dkey",dkey);
 	hexoutput(dkey,dkey_length);
+
 
 }
 
