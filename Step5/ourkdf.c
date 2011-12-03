@@ -16,6 +16,10 @@
 #define SHA256 2
 #define SHA512 3
 
+#define GOOD_SALT 1
+#define TOO_LONG_SALT -1
+#define NO_HEX_SALT -2
+
 //#define DEBUG
 
 void antiNewLine(char *str)
@@ -98,6 +102,23 @@ unsigned char char2num(unsigned char c)
     }
 
 
+
+}
+int isGoodSalt(char *str)
+{
+    int i;
+    register char c;
+    if(strlen(str) >= 33) return TOO_LONG_SALT;
+    for(i=0;i<strlen(str);i++)
+    {
+        c = str[i];
+        if(c >= 48 && c <= 57) continue;
+        else if(c >= 97 && c <= 102) continue;
+        else if(c >= 65 && c <= 70) continue;
+        else return NO_HEX_SALT;
+    }
+
+    return GOOD_SALT;
 }
 void hex2bin(unsigned char *data,int *length)
 {
@@ -157,13 +178,13 @@ void kdf(int hashtype,char *password,char *salt,int ic,unsigned char *dkey)
     switch(hashtype)
     {
         case SHA1:
-            hashfunc = EVP_sha1();
+            hashfunc = (EVP_MD *)EVP_sha1();
             break;
         case SHA256:
-            hashfunc = EVP_sha256();
+            hashfunc = (EVP_MD *)EVP_sha256();
             break;
         case SHA512:
-            hashfunc = EVP_sha512();
+            hashfunc = (EVP_MD *)EVP_sha512();
             break;
     }
 
@@ -204,9 +225,6 @@ int check_password(char *password)
             *(password+i) = '\0';
         }
         i++;
-#ifdef DEBUG
-        printf("%c[%d]\n",c,(int)c); //for debug
-#endif
         if((c > 0 && c < 45 && c != 10) || c == 47) 
         {
             printf("\nInvalid password is rejected!\n");
@@ -298,6 +316,15 @@ int main(int argc,char **argv)
             case SALT:
                 salt_flag = 1;
                 strcpy(salt,optarg);
+                switch(isGoodSalt(salt))
+                {
+                    case TOO_LONG_SALT:
+                        printf("Error:Salt is too long\n");
+                        exit(-1);
+                    case NO_HEX_SALT:
+                        printf("Error:Salt must be HEX\n");
+                        exit(-1);
+                }
 #ifdef DEBUG
                 printf("salt=%s\n",salt);
 #endif
