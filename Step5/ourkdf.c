@@ -319,10 +319,10 @@ int main(int argc,char **argv)
                 switch(isGoodSalt(salt))
                 {
                     case TOO_LONG_SALT:
-                        printf("Error:Salt is too long\n");
+                        printf("Error:Saltの値が大き過ぎます\n");
                         exit(-1);
                     case NO_HEX_SALT:
-                        printf("Error:Salt must be HEX\n");
+                        printf("Error:Saltは16進数表現文字列で入力してください\n");
                         exit(-1);
                 }
 #ifdef DEBUG
